@@ -15,27 +15,24 @@ const connectDB = async (customUri) => {
   } catch (error) {
     console.warn(`[MongoDB] Primary connection failed (${error.message}).`);
 
-    // In development or test, fall back to in-memory MongoDB so the platform runs flawlessly
-    if (config.nodeEnv !== 'production') {
-      try {
-        console.log('[MongoDB] Initializing in-memory Mongo server fallback...');
-        const { MongoMemoryServer } = require('mongodb-memory-server');
-        mongoMemoryServer = await MongoMemoryServer.create();
-        const fallbackUri = mongoMemoryServer.getUri();
-        const fallbackConn = await mongoose.connect(fallbackUri, {
-          autoIndex: true
-        });
-        console.log(`[MongoDB] Connected to in-memory instance at ${fallbackUri}`);
-        return fallbackConn;
-      } catch (fallbackError) {
-        console.error(`[MongoDB] Fallback in-memory connection failed: ${fallbackError.message}`);
+    // If external connection is unavailable, fall back to built-in in-memory MongoDB
+    try {
+      console.log('[MongoDB] Initializing built-in in-memory Mongo server fallback...');
+      const { MongoMemoryServer } = require('mongodb-memory-server');
+      mongoMemoryServer = await MongoMemoryServer.create();
+      const fallbackUri = mongoMemoryServer.getUri();
+      const fallbackConn = await mongoose.connect(fallbackUri, {
+        autoIndex: true
+      });
+      console.log(`[MongoDB] Connected successfully to built-in instance at ${fallbackUri}`);
+      return fallbackConn;
+    } catch (fallbackError) {
+      console.error(`[MongoDB] Fallback in-memory connection failed: ${fallbackError.message}`);
+      if (config.nodeEnv === 'production') {
+        process.exit(1);
       }
+      throw fallbackError;
     }
-
-    if (config.nodeEnv === 'production') {
-      process.exit(1);
-    }
-    throw error;
   }
 };
 
