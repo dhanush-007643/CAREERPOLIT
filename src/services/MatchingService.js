@@ -97,11 +97,12 @@ class MatchingService {
     const matches = [];
     for (const profile of profiles) {
       const match = matchingEngine.calculateMatch(profile, job);
+      const userId = profile.user?._id || profile.user;
       matches.push({
         candidate: {
-          _id: profile.user?._id,
-          id: profile.user?._id,
-          name: profile.fullName || profile.user?.name,
+          _id: userId,
+          id: userId,
+          name: profile.fullName || profile.user?.name || 'Fresher Candidate',
           email: profile.email || profile.user?.email,
           avatar: profile.user?.avatar,
           location: profile.location,

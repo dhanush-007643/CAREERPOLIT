@@ -41,7 +41,7 @@ export const StartupDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       const [jobsRes, pipelineRes, interviewsRes] = await Promise.allSettled([
-        jobApi.search(),
+        jobApi.getMyJobs(),
         atsApi.getPipeline(),
         interviewApi.getAll(),
       ]);

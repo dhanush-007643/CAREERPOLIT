@@ -2,7 +2,7 @@ const Joi = require('joi');
 const { APPLICATION_STATUS } = require('../utils/constants');
 
 const applyJobSchema = Joi.object({
-  resumeUrl: Joi.string().uri().optional(),
+  resumeUrl: Joi.string().allow('', null).optional(),
   coverLetter: Joi.string().max(2000).allow('').optional(),
   notes: Joi.string().allow('').optional()
 });

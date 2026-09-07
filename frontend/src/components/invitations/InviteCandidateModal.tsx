@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Send, User, Briefcase, MessageSquare } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Send, User, Briefcase, MessageSquare, AlertCircle } from 'lucide-react';
 import { Job, User as UserType } from '../../types';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -7,7 +7,7 @@ import { invitationApi } from '../../api/invitationApi';
 import { useToast } from '../../context/ToastContext';
 
 interface InviteCandidateModalProps {
-  candidate: { id: string; name: string } | null;
+  candidate: { id?: string; _id?: string; name: string } | null;
   jobs: Job[];
   isOpen: boolean;
   onClose: () => void;
@@ -21,24 +21,41 @@ export const InviteCandidateModal: React.FC<InviteCandidateModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [selectedJobId, setSelectedJobId] = useState(jobs[0]?._id || '');
+  const [selectedJobId, setSelectedJobId] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { success, error: toastError } = useToast();
 
+  useEffect(() => {
+    if (jobs && jobs.length > 0) {
+      if (!selectedJobId || !jobs.some((j) => j._id === selectedJobId)) {
+        setSelectedJobId(jobs[0]._id);
+      }
+    } else {
+      setSelectedJobId('');
+    }
+  }, [jobs, isOpen]);
+
   if (!candidate) return null;
+
+  const targetCandidateId = candidate.id || candidate._id;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedJobId) {
-      toastError('Selection Required', 'Please select a job to invite this candidate for.');
+      toastError('Selection Required', 'Please select a job opening to invite this candidate for.');
+      return;
+    }
+
+    if (!targetCandidateId) {
+      toastError('Candidate Error', 'Candidate identifier could not be determined.');
       return;
     }
 
     setIsSubmitting(true);
     try {
       await invitationApi.create({
-        fresherId: candidate.id,
+        fresherId: targetCandidateId,
         jobId: selectedJobId,
         message: message || `We were impressed with your profile and would love to interview you for this position.`,
       });
@@ -76,17 +93,24 @@ export const InviteCandidateModal: React.FC<InviteCandidateModalProps> = ({
           <label className="text-xs font-semibold text-slate-300 block mb-1">
             Target Job Opening
           </label>
-          <select
-            value={selectedJobId}
-            onChange={(e) => setSelectedJobId(e.target.value)}
-            className="w-full glass-input rounded-xl px-3 py-2.5 text-xs text-slate-100 cursor-pointer"
-          >
-            {jobs.map((j) => (
-              <option key={j._id} value={j._id} className="bg-slate-900">
-                {j.title} ({j.workMode})
-              </option>
-            ))}
-          </select>
+          {jobs.length === 0 ? (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>No active job openings found. Please create a job opening first.</span>
+            </div>
+          ) : (
+            <select
+              value={selectedJobId}
+              onChange={(e) => setSelectedJobId(e.target.value)}
+              className="w-full glass-input rounded-xl px-3 py-2.5 text-xs text-slate-100 cursor-pointer"
+            >
+              {jobs.map((j) => (
+                <option key={j._id} value={j._id} className="bg-slate-900 text-slate-100">
+                  {j.title} ({j.workMode})
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Message */}
@@ -111,6 +135,7 @@ export const InviteCandidateModal: React.FC<InviteCandidateModalProps> = ({
             type="submit"
             variant="primary"
             size="sm"
+            disabled={jobs.length === 0}
             isLoading={isSubmitting}
             leftIcon={<Send className="w-4 h-4" />}
           >
