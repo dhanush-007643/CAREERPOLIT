@@ -22,7 +22,7 @@ const { connectDB, disconnectDB } = require('../src/config/db');
 const seedData = async (options = {}) => {
   const { standalone = false, clearExisting = true } = options;
 
-  if (config.nodeEnv === 'production' && !process.env.FORCE_SEED) {
+  if (config.nodeEnv === 'production' && !process.env.FORCE_SEED && clearExisting) {
     console.error('⚠️ Seeding is disabled in production environment for data safety.');
     if (standalone) process.exit(1);
     return;
@@ -180,32 +180,6 @@ const seedData = async (options = {}) => {
           issueDate: new Date('2024-01-15'),
           credentialUrl: 'https://coursera.org/verify/meta-frontend'
         }
-      ]
-    });
-
-    await FresherProfile.create({
-      user: fresherUserDemo._id,
-      fullName: 'Demo Candidate',
-      email: 'fresher@demo.com',
-      skills: ['React', 'Node.js', 'TypeScript', 'MongoDB'],
-      preferredRoles: ['Full Stack Developer']
-    });
-        {
-          degree: 'Bachelor of Science in Computer Science',
-          university: 'University of California, Berkeley',
-          fieldOfStudy: 'Computer Science',
-          graduationYear: 2024,
-          grade: '3.85 GPA'
-        }
-      ],
-      skills: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Express', 'MongoDB', 'REST API', 'Git', 'HTML5', 'CSS3', 'TailwindCSS'],
-      certifications: [
-        {
-          name: 'Meta Front-End Developer Professional Certificate',
-          issuingOrganization: 'Coursera / Meta',
-          issueDate: new Date('2024-01-15'),
-          credentialUrl: 'https://coursera.org/verify/meta-frontend'
-        }
       ],
       projects: [
         {
@@ -242,6 +216,16 @@ const seedData = async (options = {}) => {
       linkedInUrl: 'https://linkedin.com/in/alexjohnson-dev',
       resumeUrl: 'https://res.cloudinary.com/demo/raw/upload/v1/careerpilot/resumes/alex_johnson_resume.pdf',
       completionPercentage: 100
+    });
+
+    await FresherProfile.create({
+      user: fresherUserDemo._id,
+      fullName: 'Demo Candidate',
+      email: 'fresher@demo.com',
+      skills: ['React', 'Node.js', 'TypeScript', 'MongoDB'],
+      preferredRoles: ['Full Stack Developer'],
+      preferredJobRoles: ['Full Stack Developer'],
+      completionPercentage: 80
     });
 
     const fresherUser2 = await User.create({
