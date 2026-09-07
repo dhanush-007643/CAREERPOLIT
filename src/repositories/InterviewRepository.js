@@ -13,8 +13,12 @@ class InterviewRepository extends BaseRepository {
       limit,
       { date: 1 },
       [
-        { path: 'company', select: 'companyName logo location' },
-        { path: 'application', select: 'status' }
+        { path: 'company', select: 'companyName logo location user' },
+        {
+          path: 'application',
+          select: 'status job fresherProfile notes',
+          populate: { path: 'job', select: 'title workMode location salaryRange company' }
+        }
       ]
     );
   }
@@ -27,7 +31,11 @@ class InterviewRepository extends BaseRepository {
       { date: 1 },
       [
         { path: 'fresher', select: 'name email avatar' },
-        { path: 'application', select: 'status job' }
+        {
+          path: 'application',
+          select: 'status job fresherProfile notes',
+          populate: { path: 'job', select: 'title workMode location salaryRange company' }
+        }
       ]
     );
   }

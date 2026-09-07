@@ -147,10 +147,13 @@ export const FresherDashboard: React.FC = () => {
         </GlassCard>
 
         {/* Upcoming Interviews */}
-        <GlassCard className="p-4 sm:p-5 flex flex-col justify-between">
+        <GlassCard
+          className="p-4 sm:p-5 flex flex-col justify-between cursor-pointer hover:border-emerald-500/40 transition-all group"
+          onClick={() => navigate('/interviews')}
+        >
           <div className="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
-            <span>Interviews</span>
-            <Calendar className="w-4 h-4 text-emerald-400" />
+            <span className="group-hover:text-emerald-300 transition-colors">Interviews</span>
+            <Calendar className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
           </div>
           <div>
             <div className="flex items-baseline gap-2">
@@ -159,7 +162,10 @@ export const FresherDashboard: React.FC = () => {
               </span>
               <span className="text-xs text-emerald-400 font-semibold">Upcoming</span>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">Virtual interview rounds</p>
+            <p className="text-[10px] text-slate-400 mt-1 flex items-center justify-between">
+              <span>Virtual interview rounds</span>
+              <span className="text-sky-400 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">View →</span>
+            </p>
           </div>
         </GlassCard>
       </div>

@@ -50,9 +50,11 @@ class InterviewService {
       throw new ConflictError('An active interview is already scheduled for this application', 'INTERVIEW_ALREADY_SCHEDULED');
     }
 
+    const fresherId = application.fresher?._id || application.fresher;
+
     const interview = await interviewRepository.create({
       application: application._id,
-      fresher: application.fresher._id,
+      fresher: fresherId,
       company: company._id,
       scheduledBy: userId,
       date: scheduledInstant,
@@ -73,7 +75,7 @@ class InterviewService {
     // Send notification to Fresher safely
     try {
       await notificationService.notify({
-        recipient: application.fresher._id,
+        recipient: fresherId,
         sender: userId,
         type: NOTIFICATION_TYPE.INTERVIEW_SCHEDULED,
         title: `Interview Scheduled: ${application.job?.title || 'Position'}`,
@@ -92,11 +94,12 @@ class InterviewService {
   async getInterviews(currentUser, queryParams = {}) {
     const page = parseInt(queryParams.page, 10) || 1;
     const limit = parseInt(queryParams.limit, 10) || 20;
+    const currentUserId = currentUser._id || currentUser.id;
 
     if (currentUser.role === ROLES.FRESHER) {
-      return await interviewRepository.findByFresher(currentUser.id, page, limit);
+      return await interviewRepository.findByFresher(currentUserId, page, limit);
     } else if (currentUser.role === ROLES.STARTUP) {
-      const company = await companyRepository.findByUserId(currentUser.id);
+      const company = await companyRepository.findByUserId(currentUserId);
       if (!company) return { data: [], pagination: {} };
       return await interviewRepository.findByCompany(company._id, page, limit);
     }

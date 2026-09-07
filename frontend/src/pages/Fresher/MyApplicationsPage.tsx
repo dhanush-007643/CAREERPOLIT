@@ -101,6 +101,17 @@ export const MyApplicationsPage: React.FC = () => {
                   <MatchBadge score={app.matchScore} size="sm" />
                 )}
                 {getStatusBadge(app.status)}
+                {app.status === 'INTERVIEW' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/interviews');
+                    }}
+                    className="text-xs px-2.5 py-1 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border border-violet-500/40 flex items-center gap-1 font-semibold transition-all"
+                  >
+                    <Calendar className="w-3.5 h-3.5" /> View Schedule
+                  </button>
+                )}
               </div>
             </GlassCard>
           ))}
@@ -123,6 +134,24 @@ export const MyApplicationsPage: React.FC = () => {
               </div>
               <MatchBadge score={selectedApp.matchScore || 80} size="md" />
             </div>
+
+            {selectedApp.status === 'INTERVIEW' && (
+              <div className="p-3.5 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <Calendar className="w-5 h-5 text-violet-400 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-100">Interview Scheduled</p>
+                    <p className="text-[11px] text-slate-400">Review your video meeting URL and time slot</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/interviews')}
+                  className="px-3 py-1.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-bold transition-colors shrink-0"
+                >
+                  Go to Interviews
+                </button>
+              </div>
+            )}
 
             {/* Status History Timeline */}
             <div>
