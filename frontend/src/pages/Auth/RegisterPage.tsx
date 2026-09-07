@@ -36,11 +36,12 @@ export const RegisterPage: React.FC = () => {
       });
       navigate('/dashboard');
     } catch (err: any) {
+      const targetUrl = (import.meta as any).env?.VITE_API_URL || '(default: /api)';
       const msg =
         err.response?.data?.message ||
         err.response?.data?.details?.[0]?.message ||
-        (err.code === 'ERR_NETWORK'
-          ? 'Cannot connect to backend server. Make sure "npm run dev" is running on port 5000.'
+        (err.code === 'ERR_NETWORK' || !err.response
+          ? `Cannot connect to backend server at "${targetUrl}". Please verify your Render service is active and VITE_API_URL in Vercel is set to your Render URL + /api.`
           : 'Registration failed. Please check your details.');
       setErrorMessage(msg);
     } finally {

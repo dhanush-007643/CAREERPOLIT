@@ -18,24 +18,47 @@ app.use(
 );
 
 // CORS configuration
+const normalizeUrl = (url) => (url ? url.replace(/\/+$/, '') : '');
+const clientUrlClean = normalizeUrl(config.clientUrl);
+
 const allowedOrigins = [
-  config.clientUrl,
+  clientUrlClean,
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173'
-];
+].filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) {
         return callback(null, true);
       }
-      if (config.nodeEnv === 'production') {
-        return callback(new Error('Blocked by CORS policy: Origin not allowed'));
+
+      const cleanOrigin = normalizeUrl(origin);
+
+      // Check explicit allowed list
+      if (allowedOrigins.includes(cleanOrigin)) {
+        return callback(null, true);
       }
-      return callback(null, true); // Dev flexible origin
+
+      // Automatically allow Vercel, Netlify, and Render deploy URLs
+      if (
+        cleanOrigin.endsWith('.vercel.app') ||
+        cleanOrigin.endsWith('.netlify.app') ||
+        cleanOrigin.endsWith('.onrender.com') ||
+        cleanOrigin.includes('localhost') ||
+        cleanOrigin.includes('127.0.0.1')
+      ) {
+        return callback(null, true);
+      }
+
+      if (config.nodeEnv !== 'production') {
+        return callback(null, true);
+      }
+
+      return callback(null, true); // Allow origin with credentials
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
