@@ -3,14 +3,16 @@ const config = require('../config/env');
 const ApiResponse = require('../utils/apiResponse');
 
 const isTest = process.env.NODE_ENV === 'test';
+const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
 const apiLimiter = isTest
   ? (req, res, next) => next()
   : rateLimit({
-      windowMs: config.rateLimit.windowMs,
-      max: config.rateLimit.max,
+      windowMs: config.rateLimit.windowMs || 15 * 60 * 1000,
+      max: isDev ? 20000 : (config.rateLimit.max || 2000),
       standardHeaders: true,
       legacyHeaders: false,
+      skip: (req) => isDev && (req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1'),
       handler: (req, res) => {
         return ApiResponse.error(
           res,
@@ -25,9 +27,10 @@ const authLimiter = isTest
   ? (req, res, next) => next()
   : rateLimit({
       windowMs: 15 * 60 * 1000,
-      max: 30, // 30 login/register attempts per 15 min
+      max: isDev ? 1000 : 100, // relaxed threshold for auth
       standardHeaders: true,
       legacyHeaders: false,
+      skip: (req) => isDev && (req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1'),
       handler: (req, res) => {
         return ApiResponse.error(
           res,
